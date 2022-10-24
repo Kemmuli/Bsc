@@ -67,6 +67,7 @@ if __name__ == "__main__":
     input_shapes = np.load('input_shapes.npy', allow_pickle=True)
     feature_ids = np.load('data_id_dict.npy', allow_pickle=True)
     labels = np.load('class_labels.npy', allow_pickle=True).item()
+    model_accs = []
 
     for feature in feature_types:
         dataset = feature_ids.item().get(feature)
@@ -88,5 +89,10 @@ if __name__ == "__main__":
         savename = './' + feature + '_model'
         model.save(savename)
         print(f"Accuracy: {acc:.3g}")
+        model_accs.append((feature, acc))
         # graph of learning
         plot_results(history, feature, acc)
+
+    for model in model_accs:
+        feature, acc = model
+        print(f'{feature} with accuracy: {acc}')
