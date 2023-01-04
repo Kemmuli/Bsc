@@ -9,7 +9,7 @@ import itertools
 import librosa.feature
 
 
-def gcc_phat(spec, use_mel=False, nb_mel=128):
+def gcc_phat(spec, use_mel=False, nb_mel=96):
     """
     Computer GCC-phat across all channels
     Input:
@@ -34,11 +34,9 @@ def gcc_phat(spec, use_mel=False, nb_mel=128):
         cc = np.fft.irfft(np.exp(1.j * np.angle(R)), axis=0)
 
         if use_mel:
-            cc = np.concatenate((cc[-nb_mel, :], cc[:nb_mel // 2, :]), axis=0)
+            cc = np.concatenate((cc[-nb_mel // 2:, :], cc[:nb_mel // 2, :]), axis=0)
         else:
-            cc = np.concatenate(
-                (cc[-spec_shape[0] // 2:, :], cc[:spec_shape[0] // 2, :]),
-                axis=0)
+            cc = np.concatenate((cc[-spec_shape[0] // 2:, :], cc[:spec_shape[0] // 2, :]), axis=0)
 
         gcc_phat[:, :, idx] = cc
         idx += 1
@@ -98,11 +96,21 @@ def ild(mag_spec):
 
     idx = 0
     for l_ch, r_ch in itertools.combinations(channels, 2):
-        ild[:, :, idx] = np.divide(mag_spec[:, :, l_ch], mag_spec[:, :, r_ch])
+        zero_mask = mag_spec[:, :, r_ch] == 0
+        ild[:, :, idx] = np.where(zero_mask, 0, np.divide(mag_spec[:, :, l_ch], mag_spec[:, :, r_ch]))
         idx += 1
 
     return ild
 
+
+def mel_spectrogram(filepath, fs):
+    # compute mel spec
+    audio, sr = librosa.core.load(filepath, sr=fs, mono=False)
+    mel_left = librosa.feature.melspectrogram(audio[0, :], sr=fs)
+    mel_right = librosa.feature.melspectrogram(audio[1, :], sr=fs)
+    mel = np.stack((mel_left, mel_right), axis=2)
+
+    return mel
 
 audiopath = './direction-dataset/audio/'
 audiofiles = glob.glob('./direction-dataset/audio/*.wav')
@@ -164,17 +172,19 @@ for i in range(len(audiofiles)):
     print(ilds.shape)
     np.save((save_fp + '_ilds'), ilds)
 
-    # compute mel spec
-    audio, sr = librosa.core.load(filepath, sr=fs, mono=False)
-    mel_left = librosa.feature.melspectrogram(audio[0, :], sr=fs)
-    mel_right = librosa.feature.melspectrogram(audio[1, :], sr=fs)
-    mel = np.stack((mel_left, mel_right), axis=2)
+    # Save mel spectrogram
+    mel = mel_spectrogram(filepath, fs)
     print(mel.shape)
     np.save((save_fp + '_mel'), mel)
 
     # Save mag spec
     np.save((save_fp + '_magspec'), mag_specs)
-    # TODO: mel-gcc
+
+    # Save mel-GCC
+    mel_gcc = gcc_phat(mel, use_mel=True, nb_mel=mel.shape[0])
+    print(mel_gcc.shape)
+    np.save((save_fp + '_mel_gcc_phat'), mel_gcc)
+
 
 
 

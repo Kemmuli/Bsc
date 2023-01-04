@@ -6,12 +6,12 @@ import csv
 
 def load_dataset():
 
-    feature_types = ['magspec', 'GCC', 'mel', 'ilds', 'phase_diffs_cossine', 'phase_diff']
+    feature_types = ['GCC', 'magspec', 'mel', 'ilds', 'phase_diffs_cossine', 'phase_diff', 'mel_gcc_phat']
     feature_ids = {}
     input_shapes = {}
     for feature in feature_types:
         dataset = {'train': [], 'validation': [], 'test': []}
-        data_fp = './direction-dataset/audio/*' + feature + '.npy'
+        data_fp = './direction-dataset/audio/*_' + feature + '.npy'
         data_fnames = glob.glob(data_fp)
 
         for name in data_fnames:
