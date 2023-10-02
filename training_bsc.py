@@ -8,6 +8,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.callbacks import EarlyStopping, TensorBoard
 from tensorflow.keras.optimizers import Adam
+from sklearn.metrics import confusion_matrix, plot_confusion_matrix
 from datagen_bsc import DataGen
 
 
@@ -24,7 +25,7 @@ def define_model(input_shape):
                          kernel_initializer='he_uniform', padding='same'))
         model.add(MaxPooling2D((4, 4)))
         model.add(Dropout(0.0))
-
+        """
         model.add(Conv2D(64, (3, 3), activation='relu',
                          kernel_initializer='he_uniform', padding='same'))
         model.add(MaxPooling2D((4, 4)))
@@ -33,7 +34,7 @@ def define_model(input_shape):
         model.add(Conv2D(64, (3, 3), activation='relu',
                          kernel_initializer='he_uniform', padding='same'))
         model.add(MaxPooling2D((2, 4)))
-        model.add(Dropout(0.0))
+        model.add(Dropout(0.0))"""
 
         model.add(Flatten())
 
@@ -56,9 +57,9 @@ def define_model(input_shape):
         model.add(Conv2D(64, (3, 3), activation='relu',
                          kernel_initializer='he_uniform', padding='same'))
         model.add(MaxPooling2D((4, 4)))
-        model.add(Dropout(0.1))
+        model.add(Dropout(0.0))
 
-        model.add(Conv2D(64, (3, 3), activation='relu',
+        """model.add(Conv2D(64, (3, 3), activation='relu',
                          kernel_initializer='he_uniform', padding='same'))
         model.add(MaxPooling2D((4, 4)))
         model.add(Dropout(0.1))
@@ -66,11 +67,11 @@ def define_model(input_shape):
         model.add(Conv2D(64, (3, 3), activation='relu',
                          kernel_initializer='he_uniform', padding='same'))
         model.add(MaxPooling2D((2, 4)))
-        model.add(Dropout(0.1))
+        model.add(Dropout(0.1))"""
 
         model.add(Flatten())
 
-        model.add(Dense(128, activation='relu', kernel_initializer='he_uniform'))
+        model.add(Dense(64, activation='relu', kernel_initializer='he_uniform'))
         model.add(Dropout(0.1))
         model.add(Dense(64, activation='relu', kernel_initializer='he_uniform'))
         model.add(Dense(4, activation='sigmoid'))
@@ -186,8 +187,25 @@ if __name__ == "__main__":
         # Plot learning curve
         plot_results(history, feature)
 
+        target_names = []
+        for key in training_gen.indexes:
+            target_names.append(key)
+
+        # Plot Confusion matrix
+        Y_true = np.argmax()
+
+        Y_pred = model.predict_generator(test_gen)
+        y_pred = np.argmax(Y_pred, axis=1)
+
+        print(f'Confusion matrix')
+        # TODO: Make sure n_classes is what is wanted in 'testing_generator.classes'
+        cm = confusion_matrix(test_gen.n_classes, y_pred)
+        plot_confusion_matrix(cm, target_names, title='Confusion Matrix')
+
+
     # Print the accuracy of each model
     for model in model_accs:
         feature, acc = model
         print(f'{feature} with accuracy: {acc:.3g}')
+
 

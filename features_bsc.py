@@ -162,7 +162,6 @@ for i in range(len(audiofiles)):
     np.save((save_fp + '_phase_diff'), phase_diffs)
 
     # compute sines & cosines
-
     phase_diffs_cossine = phase_diff(phase_specs, cos_sine=True)
     print(phase_diffs_cossine.shape)
     np.save((save_fp + '_phase_diffs_cossine'), phase_diffs_cossine)
