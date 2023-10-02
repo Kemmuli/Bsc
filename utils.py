@@ -8,6 +8,8 @@ import datetime
 from sklearn.metrics import confusion_matrix
 
 
+classtypes = ['front', 'right', 'back', 'left']
+
 def plot_results(history, feature):
 
     plt.figure()
@@ -82,15 +84,14 @@ def calculate_per_class_accuracy(cm):
     return per_class_acc
 
 
-def plot_per_class_accuracy(per_class_acc):
+def plot_per_class_accuracy(per_class_acc, feature=''):
     for i, acc in enumerate(per_class_acc):
-        print(f'Accuracy for Class {i+1}: {acc:.2f}%')
+        print(f'Accuracy for Class {classtypes[i]} in {feature}: {acc:.2f}%')
 
-    classes = [0, 1, 2, 3]
-    plt.bar(classes, per_class_acc)
+    plt.bar(classtypes, per_class_acc)
     plt.xlabel('Classes')
     plt.ylabel('Accuracy (%)')
-    plt.title('Per-Class Accuracy')
+    plt.title(f'Per-Class Accuracy for {feature}')
     plt.show()
 
 

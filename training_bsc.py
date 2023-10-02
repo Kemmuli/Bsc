@@ -12,6 +12,18 @@ from tensorflow.keras.optimizers import Adam
 from datagen_bsc import DataGen
 
 
+def create_generators(feature, feature_ids, input_shapes, labels):
+    dataset = feature_ids.item().get(feature)
+    input_shape = input_shapes.item().get(feature)
+    params = {'batch_size': 16, 'dim': input_shape, 'n_classes': 4,
+              'feature': feature, 'shuffle': True}
+    training_gen = DataGen(dataset['train'], labels, **params)
+    validation_gen = DataGen(dataset['validation'], labels, **params)
+    test_gen = DataGen(dataset['test'], labels, **params)
+
+    return training_gen, validation_gen, test_gen
+
+
 def define_model(input_shape):
     model = Sequential()
     if input_shape[0] == 128:
@@ -104,13 +116,11 @@ if __name__ == "__main__":
     # Iterate through each feature type
     for feature in feature_types:
         # Load the dataset for the current feature type
-        dataset = feature_ids.item().get(feature)
-        input_shape = input_shapes.item().get(feature)
-        params = {'batch_size': 16, 'dim': input_shape, 'n_classes': 4,
-                  'feature': feature, 'shuffle': True}
-        training_gen = DataGen(dataset['train'], labels, **params)
-        validation_gen = DataGen(dataset['validation'], labels, **params)
-        test_gen = DataGen(dataset['test'], labels, **params)
+
+        training_gen, validation_gen, test_gen = create_generators(feature=feature,
+                                                                   feature_ids=feature_ids,
+                                                                   input_shapes=input_shapes,
+                                                                   labels=labels)
 
         # Define early stopping callback
         callback = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
