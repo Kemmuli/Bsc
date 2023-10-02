@@ -55,7 +55,16 @@ class DataGen(Sequence):
         self.on_epoch_end()
 
     def __iter__(self):
+        self.current_idx = 0  # Reset the index
         return self
+
+    def __next__(self):
+        if self.current_idx >= len(self):
+            raise StopIteration  # Iteration complete
+        else:
+            batch_x, batch_y = self.__getitem__(self.current_idx)
+            self.current_idx += 1
+            return batch_x, batch_y
 
     def on_epoch_end(self):
         self.indexes = np.arange(len(self.ID_list))

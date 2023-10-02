@@ -2,13 +2,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import datetime
+import utils
 
 from tensorflow.keras.layers import Dense, Flatten, Dropout, Conv2D, MaxPooling2D
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.callbacks import EarlyStopping, TensorBoard
 from tensorflow.keras.optimizers import Adam
-from sklearn.metrics import confusion_matrix, plot_confusion_matrix
 from datagen_bsc import DataGen
 
 
@@ -86,57 +86,6 @@ def define_model(input_shape):
     return model, tensorboard_callback
 
 
-def plot_results(history, feature):
-
-    plt.figure()
-    plt.suptitle(feature)
-
-    # Plot the loss
-    plt.subplot(1, 2, 1)
-    plt.plot(history.history['loss'], color='blue', label='Train')
-    plt.plot(history.history['val_loss'], color='green', label='Validation')
-    plt.xlabel('Epoch')
-    plt.ylabel('Loss')
-    plt.legend()
-
-    # Plot the accuracy
-    plt.subplot(1, 2, 2)
-    plt.plot(history.history['accuracy'], color='blue', label='Train')
-    plt.plot(history.history['val_accuracy'], color='green', label='Validation')
-    plt.xlabel('Epoch')
-    plt.ylabel('Accuracy')
-    plt.legend()
-
-    # Save the figure to a file
-    save_dir = 'figures'
-    # Get the current time as a string
-    time_str = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-    if not os.path.exists(save_dir):
-        os.makedirs(save_dir)
-    save_path = os.path.join(save_dir, f'{feature}_{time_str}.png')
-    plt.savefig(save_path)
-    #plt.show()
-    plt.close()
-
-
-def save_model(model, feature, acc, wd):
-    time_str = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-    model_path = os.path.join(wd, f'{feature}_model')
-    model_name = os.path.join(model_path, f'{feature}_{time_str}')
-    model.save(model_name)
-    best_model_path = os.path.join(model_path, 'best')
-    if os.path.exists(best_model_path):
-        prev_acc = np.load(os.path.join(best_model_path, 'accuracy.npy'))
-        if acc > prev_acc:
-            model.save(os.path.join(best_model_path, feature))
-            np.save(os.path.join(best_model_path, 'accuracy.npy'), acc)
-    else:
-        model.save(os.path.join(best_model_path, feature))
-        np.save(os.path.join(best_model_path, 'accuracy.npy'), acc)
-
-    return
-
-
 if __name__ == "__main__":
 
     # Get current working directory
@@ -179,28 +128,18 @@ if __name__ == "__main__":
         loss, acc = model.evaluate(x=test_gen, verbose=0)
 
         # Save the model and its accuracy
-        save_model(model, feature, acc, wd)
+        utils.save_model(model, feature, acc, wd)
 
         print(f"Accuracy: {acc:.3g}")
         model_accs.append((feature, acc))
 
         # Plot learning curve
-        plot_results(history, feature)
-
-        target_names = []
-        for key in training_gen.indexes:
-            target_names.append(key)
-
-        # Plot Confusion matrix
-        Y_true = np.argmax()
-
-        Y_pred = model.predict_generator(test_gen)
-        y_pred = np.argmax(Y_pred, axis=1)
-
-        print(f'Confusion matrix')
-        # TODO: Make sure n_classes is what is wanted in 'testing_generator.classes'
-        cm = confusion_matrix(test_gen.n_classes, y_pred)
-        plot_confusion_matrix(cm, target_names, title='Confusion Matrix')
+        utils.plot_results(history, feature)
+        # Plot confusion matrix
+        cm = utils.get_confusion_matrix(model, test_gen)
+        utils.plot_confusion_matrix(cm, feature=feature, classes=classtypes)
+        plt.close()
+        per_class_acc = utils.calculate_per_class_accuracy(cm)
 
 
     # Print the accuracy of each model
