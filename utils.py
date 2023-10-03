@@ -84,14 +84,24 @@ def calculate_per_class_accuracy(cm):
     return per_class_acc
 
 
-def plot_per_class_accuracy(per_class_acc, feature=''):
+def plot_per_class_accuracy(per_class_acc, general_acc, classtypes, feature=''):
     for i, acc in enumerate(per_class_acc):
         print(f'Accuracy for Class {classtypes[i]} in {feature}: {acc:.2f}%')
 
     plt.bar(classtypes, per_class_acc)
+    plt.axhline(y=general_acc, color='r', linestyle='--', label=f'General Accuracy: {general_acc:.2f}%')
+
+    # Set y-ticks at 0.05 intervals
+    y_ticks = np.arange(0, 1.05, 0.05)
+    plt.yticks(y_ticks)
+    # Set y-axis limits to [0, 1]
+    plt.ylim(0, 1)
+
     plt.xlabel('Classes')
     plt.ylabel('Accuracy (%)')
     plt.title(f'Per-Class Accuracy for {feature}')
+
+    plt.legend()
     plt.show()
 
 

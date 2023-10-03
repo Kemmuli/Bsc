@@ -34,7 +34,8 @@ for feature in feature_types:
     model.summary()
     cm = utils.get_confusion_matrix(model, test_gen)
     per_class_acc = utils.calculate_per_class_accuracy(cm)
-    utils.plot_per_class_accuracy(per_class_acc, feature)
+    utils.plot_confusion_matrix(cm, classtypes, feature)
+    utils.plot_per_class_accuracy(per_class_acc, general_acc=acc, classtypes=classtypes, feature=feature)
 
 
 print(f'Best feature is: {best_feature}\nWith an accuracy of: {best_acc}')
