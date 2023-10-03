@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 
 import itertools
 import os
@@ -9,6 +10,33 @@ from sklearn.metrics import confusion_matrix
 
 
 classtypes = ['front', 'right', 'back', 'left']
+
+
+def plot_accuracies(accuracy_dict: dict, save_dir: str) -> None:
+    df = pd.DataFrame(list(accuracy_dict.items()), columns=['Feature', 'Accuracy'])
+    df = df.sort_values('Accuracy', ascending=False)
+
+    plt.figure(figsize=(10, 8))  # Increased figure size for better visibility
+    plt.barh(df['Feature'], df['Accuracy'], color='skyblue')
+    plt.xlabel('Accuracy')
+    plt.ylabel('Feature')
+    plt.title('Feature Accuracies')
+    plt.xlim([0, 1])
+    x_ticks = np.arange(0, 1.05, 0.05)
+    plt.xticks(x_ticks)
+
+    plt.tight_layout()  # Adjust layout to prevent cutting off labels
+
+    # Save the figure to a file
+
+    # Get the current time as a string
+    time_str = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+    save_path_png = os.path.join(save_dir, f'Accuracies_{time_str}.png')
+    df.to_csv(os.path.join(save_dir, f'Accuracies_{time_str}.csv'), index=False)
+    plt.savefig(save_path_png)
+
 
 def plot_results(history, feature):
 
