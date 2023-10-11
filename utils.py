@@ -11,9 +11,36 @@ from sklearn.metrics import confusion_matrix
 
 classtypes = ['front', 'right', 'back', 'left']
 
+feature_types_dict = {
+    'GCC': 'GCC-PHAT',
+    'mel_gcc_phat': 'GCC-PHAT-Mel',
+    'mel': 'Mel-Frequency Spectrogram',
+    'phase_diffs_cossine': 'Phase Difference Cosine Similarity',
+    'magspec': 'Magnitude Spectrogram',
+    'ilds': 'Interaural Level Differences',
+    'phase_diff': 'Phase Difference'
+}
+
+
+def map_accuracy_keys(accuracy_dict: dict, feature_types_dict: dict) -> dict:
+    """
+    Map the keys of the accuracy_dict to match the values in feature_types_dict.
+
+    Parameters:
+        accuracy_dict (dict): Dictionary containing feature accuracies.
+        feature_types_dict (dict): Dictionary mapping feature abbreviations to full names.
+
+    Returns:
+        dict: A new dictionary with keys mapped to full feature names.
+    """
+    return {feature_types_dict.get(key, key): value for key, value in accuracy_dict.items()}
+
 
 def plot_accuracies(accuracy_dict: dict, save_dir: str) -> None:
-    df = pd.DataFrame(list(accuracy_dict.items()), columns=['Feature', 'Accuracy'])
+    # Map abbreviated feature names to full names
+    mapped_accuracy_dict = {feature_types_dict.get(k, k): v for k, v in accuracy_dict.items()}
+
+    df = pd.DataFrame(list(mapped_accuracy_dict.items()), columns=['Feature', 'Accuracy'])
     df = df.sort_values('Accuracy', ascending=False)
 
     plt.figure(figsize=(10, 8))  # Increased figure size for better visibility
@@ -28,20 +55,24 @@ def plot_accuracies(accuracy_dict: dict, save_dir: str) -> None:
     plt.tight_layout()  # Adjust layout to prevent cutting off labels
 
     # Save the figure to a file
-
-    # Get the current time as a string
     time_str = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
     save_path_png = os.path.join(save_dir, f'Accuracies_{time_str}.png')
-    df.to_csv(os.path.join(save_dir, f'Accuracies_{time_str}.csv'), index=False)
     plt.savefig(save_path_png)
+
+    # Save the DataFrame to a CSV file
+    df.to_csv(os.path.join(save_dir, f'Accuracies_{time_str}.csv'), index=False)
+
+    plt.show()
 
 
 def plot_results(history, feature):
+    # Map the abbreviated feature name to the full name
+    feature_full_name = feature_types_dict.get(feature, feature)
 
     plt.figure()
-    plt.suptitle(feature)
+    plt.suptitle(feature_full_name)
 
     # Plot the loss
     plt.subplot(1, 2, 1)
@@ -58,22 +89,25 @@ def plot_results(history, feature):
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy')
     plt.legend()
+    plt.tight_layout()  # Adjust layout to prevent cutting off labels
 
     # Save the figure to a file
     save_dir = 'figures'
-    # Get the current time as a string
     time_str = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
-    save_path = os.path.join(save_dir, f'{feature}_{time_str}.png')
+    save_path = os.path.join(save_dir, f'{feature_full_name}_{time_str}.png')
     plt.savefig(save_path)
-    #plt.show()
+    plt.show()
     plt.close()
 
 
 def plot_confusion_matrix(cm, classes, feature):
+    # Map the abbreviated feature name to the full name
+    feature_full_name = feature_types_dict.get(feature, feature)
+
     plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
-    plt.title(f'Confusion Matrix for {feature}')
+    plt.title(f'Confusion Matrix for {feature_full_name}')
     plt.colorbar()
     tick_marks = np.arange(len(classes))
     plt.xticks(tick_marks, classes, rotation=45)
@@ -86,6 +120,7 @@ def plot_confusion_matrix(cm, classes, feature):
 
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
+    plt.tight_layout()
     plt.show()
 
 
@@ -113,8 +148,11 @@ def calculate_per_class_accuracy(cm):
 
 
 def plot_per_class_accuracy(per_class_acc, general_acc, classtypes, feature=''):
+    # Map the abbreviated feature name to the full name
+    feature_full_name = feature_types_dict.get(feature, feature)
+
     for i, acc in enumerate(per_class_acc):
-        print(f'Accuracy for Class {classtypes[i]} in {feature}: {acc:.2f}%')
+        print(f'Accuracy for Class {classtypes[i]} in {feature_full_name}: {acc:.2f}%')
 
     plt.bar(classtypes, per_class_acc)
     plt.axhline(y=general_acc, color='r', linestyle='--', label=f'General Accuracy: {general_acc:.2f}%')
@@ -127,7 +165,7 @@ def plot_per_class_accuracy(per_class_acc, general_acc, classtypes, feature=''):
 
     plt.xlabel('Classes')
     plt.ylabel('Accuracy (%)')
-    plt.title(f'Per-Class Accuracy for {feature}')
+    plt.title(f'Per-Class Accuracy for {feature_full_name}')
 
     plt.legend()
     plt.show()

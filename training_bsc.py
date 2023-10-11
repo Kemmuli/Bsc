@@ -71,22 +71,21 @@ def define_model(input_shape):
         model.add(MaxPooling2D((4, 4)))
         model.add(Dropout(0.0))
 
-        """model.add(Conv2D(64, (3, 3), activation='relu',
+        model.add(Conv2D(64, (3, 3), activation='relu',
                          kernel_initializer='he_uniform', padding='same'))
         model.add(MaxPooling2D((4, 4)))
-        model.add(Dropout(0.1))
+
 
         model.add(Conv2D(64, (3, 3), activation='relu',
                          kernel_initializer='he_uniform', padding='same'))
         model.add(MaxPooling2D((2, 4)))
-        model.add(Dropout(0.1))"""
 
         model.add(Flatten())
 
         model.add(Dense(64, activation='relu', kernel_initializer='he_uniform'))
         model.add(Dropout(0.1))
         model.add(Dense(64, activation='relu', kernel_initializer='he_uniform'))
-        model.add(Dense(4, activation='sigmoid'))
+        model.add(Dense(4, activation='softmax'))
 
         optimize = Adam(0.001, 0.9)
         model.compile(optimizer=optimize, loss='categorical_crossentropy',
@@ -126,13 +125,13 @@ if __name__ == "__main__":
         callback = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
 
         # Define model and tensorboard callback
-        model, tensorboard_callback = define_model(input_shape)
+        model, tensorboard_callback = define_model(input_shapes.item()[feature])
 
         # Train the model
-        history = model.fit_generator(generator=training_gen, epochs=100,
-                                      use_multiprocessing=False,
-                                      validation_data=validation_gen,
-                                      verbose=1, callbacks=[callback, tensorboard_callback])
+        history = model.fit(x=training_gen, epochs=100,
+                            use_multiprocessing=False,
+                            validation_data=validation_gen,
+                            verbose=1, callbacks=[callback, tensorboard_callback])
 
         # Evaluate the model on the test set
         loss, acc = model.evaluate(x=test_gen, verbose=0)
@@ -150,6 +149,7 @@ if __name__ == "__main__":
         utils.plot_confusion_matrix(cm, feature=feature, classes=classtypes)
         plt.close()
         per_class_acc = utils.calculate_per_class_accuracy(cm)
+        utils.plot_per_class_accuracy(per_class_acc, acc, classtypes, feature)
 
 
     # Print the accuracy of each model

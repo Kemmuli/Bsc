@@ -93,21 +93,22 @@ def ild(mag_spec):
     nb_diff_ch = int(special.binom(nb_ch, 2))
 
     ild = np.zeros((mag_spec.shape[0], mag_spec.shape[1], nb_diff_ch))
+    epsilon = 0.00000000001
 
     idx = 0
     for l_ch, r_ch in itertools.combinations(channels, 2):
         zero_mask = mag_spec[:, :, r_ch] == 0
-        ild[:, :, idx] = np.where(zero_mask, 0, np.divide(mag_spec[:, :, l_ch], mag_spec[:, :, r_ch]))
+        ild[:, :, idx] = np.where(zero_mask, 0, np.divide(mag_spec[:, :, l_ch], mag_spec[:, :, r_ch] + epsilon))
         idx += 1
 
     return ild
 
 
-def mel_spectrogram(filepath, fs):
+def mel_spectrogram(filepath, fs, n_fft, n_mels):
     # compute mel spec
     audio, sr = librosa.core.load(filepath, sr=fs, mono=False)
-    mel_left = librosa.feature.melspectrogram(audio[0, :], sr=fs)
-    mel_right = librosa.feature.melspectrogram(audio[1, :], sr=fs)
+    mel_left = librosa.feature.melspectrogram(audio[0, :], sr=fs, n_fft=n_fft, n_mels=n_mels)
+    mel_right = librosa.feature.melspectrogram(audio[1, :], sr=fs, n_fft=n_fft, n_mels=n_mels)
     mel = np.stack((mel_left, mel_right), axis=2)
 
     return mel
@@ -172,16 +173,16 @@ for i in range(len(audiofiles)):
     np.save((save_fp + '_ilds'), ilds)
 
     # Save mel spectrogram
-    mel = mel_spectrogram(filepath, fs)
-    print(mel.shape)
+    mel = mel_spectrogram(filepath, fs, n_fft=nfft, n_mels=128)
+    print(f'Shape of mel {mel.shape}')
     np.save((save_fp + '_mel'), mel)
 
     # Save mag spec
     np.save((save_fp + '_magspec'), mag_specs)
 
     # Save mel-GCC
-    mel_gcc = gcc_phat(mel, use_mel=True, nb_mel=mel.shape[0])
-    print(mel_gcc.shape)
+    mel_gcc = gcc_phat(complex_specs, use_mel=True, nb_mel=mel.shape[0])
+    print(f' Shape of mel-GCC {mel_gcc.shape}')
     np.save((save_fp + '_mel_gcc_phat'), mel_gcc)
 
 
