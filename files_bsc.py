@@ -6,7 +6,8 @@ import csv
 
 def load_dataset():
 
-    feature_types = ['GCC', 'mel_gcc_phat', 'mel', 'phase_diffs_cossine', 'magspec', 'ilds', 'phase_diff']
+    feature_types = ['GCC', 'mel_gcc_phat', 'mel', 'phase_diffs_cossine',
+                     'magspec', 'ilds', 'phase_diff', 'cossine_gcc']
     feature_ids = {}
     input_shapes = {}
     for feature in feature_types:

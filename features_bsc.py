@@ -107,8 +107,8 @@ def ild(mag_spec):
 def mel_spectrogram(filepath, fs, n_fft, n_mels):
     # compute mel spec
     audio, sr = librosa.core.load(filepath, sr=fs, mono=False)
-    mel_left = librosa.feature.melspectrogram(audio[0, :], sr=fs, n_fft=n_fft, n_mels=n_mels)
-    mel_right = librosa.feature.melspectrogram(audio[1, :], sr=fs, n_fft=n_fft, n_mels=n_mels)
+    mel_left = librosa.feature.melspectrogram(y=audio[0, :], sr=fs, n_fft=n_fft, n_mels=n_mels)
+    mel_right = librosa.feature.melspectrogram(y=audio[1, :], sr=fs, n_fft=n_fft, n_mels=n_mels)
     mel = np.stack((mel_left, mel_right), axis=2)
 
     return mel
@@ -186,5 +186,8 @@ for i in range(len(audiofiles)):
     np.save((save_fp + '_mel_gcc_phat'), mel_gcc)
 
 
+    cossine_gcc = np.concatenate((phase_diffs_cossine, gcc_spectrogram), axis=-1)
+    print(f'Shape of cossine + gcc {cossine_gcc.shape}')
+    np.save((save_fp + '_cossine_gcc'), cossine_gcc)
 
 

@@ -6,7 +6,6 @@ import utils
 
 from tensorflow.keras.layers import Dense, Flatten, Dropout, Conv2D, MaxPooling2D
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.callbacks import EarlyStopping, TensorBoard
 from tensorflow.keras.optimizers import Adam
 from datagen_bsc import DataGen
@@ -37,16 +36,6 @@ def define_model(input_shape):
                          kernel_initializer='he_uniform', padding='same'))
         model.add(MaxPooling2D((4, 4)))
         model.add(Dropout(0.0))
-        """
-        model.add(Conv2D(64, (3, 3), activation='relu',
-                         kernel_initializer='he_uniform', padding='same'))
-        model.add(MaxPooling2D((4, 4)))
-        model.add(Dropout(0.0))
-
-        model.add(Conv2D(64, (3, 3), activation='relu',
-                         kernel_initializer='he_uniform', padding='same'))
-        model.add(MaxPooling2D((2, 4)))
-        model.add(Dropout(0.0))"""
 
         model.add(Flatten())
 
@@ -85,7 +74,7 @@ def define_model(input_shape):
         model.add(Dense(64, activation='relu', kernel_initializer='he_uniform'))
         model.add(Dropout(0.1))
         model.add(Dense(64, activation='relu', kernel_initializer='he_uniform'))
-        model.add(Dense(4, activation='softmax'))
+        model.add(Dense(4, activation='sigmoid'))
 
         optimize = Adam(0.001, 0.9)
         model.compile(optimizer=optimize, loss='categorical_crossentropy',
@@ -103,7 +92,8 @@ if __name__ == "__main__":
     wd = os.getcwd()
 
     # Load list of feature types and class labels
-    feature_types = ['GCC', 'mel_gcc_phat', 'mel', 'phase_diffs_cossine', 'magspec', 'ilds', 'phase_diff']
+    feature_types = ['phase_diffs_cossine', 'cossine_gcc', 'mel_gcc_phat', 'GCC', 'mel',
+                     'magspec', 'ilds', 'phase_diff']
     classtypes = ['front', 'right', 'back', 'left']
     input_shapes = np.load('input_shapes.npy', allow_pickle=True)
     feature_ids = np.load('data_id_dict.npy', allow_pickle=True)
@@ -129,7 +119,6 @@ if __name__ == "__main__":
 
         # Train the model
         history = model.fit(x=training_gen, epochs=100,
-                            use_multiprocessing=False,
                             validation_data=validation_gen,
                             verbose=1, callbacks=[callback, tensorboard_callback])
 
