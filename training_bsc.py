@@ -30,19 +30,25 @@ def define_model(input_shape):
                          kernel_initializer='he_uniform', padding='same',
                          input_shape=input_shape))
         model.add(MaxPooling2D((4, 4)))
-        model.add(Dropout(0.0))
 
         model.add(Conv2D(64, (3, 3), activation='relu',
                          kernel_initializer='he_uniform', padding='same'))
         model.add(MaxPooling2D((4, 4)))
-        model.add(Dropout(0.0))
+
+        model.add(Conv2D(64, (3, 3), activation='relu',
+                         kernel_initializer='he_uniform', padding='same'))
+        model.add(MaxPooling2D((4, 4)))
+
+        model.add(Conv2D(64, (3, 3), activation='relu',
+                         kernel_initializer='he_uniform', padding='same'))
+        model.add(MaxPooling2D((2, 4)))
 
         model.add(Flatten())
 
         model.add(Dense(128, activation='relu', kernel_initializer='he_uniform'))
-        model.add(Dropout(0.1))
+        model.add(Dropout(0.0))
         model.add(Dense(64, activation='relu', kernel_initializer='he_uniform'))
-        model.add(Dense(4, activation='sigmoid'))
+        model.add(Dense(4, activation='softmax'))
 
         optimize = Adam(0.001, 0.9)
         model.compile(optimizer=optimize, loss='categorical_crossentropy',
@@ -53,12 +59,10 @@ def define_model(input_shape):
                          kernel_initializer='he_uniform', padding='same',
                          input_shape=input_shape))
         model.add(MaxPooling2D((8, 4)))
-        model.add(Dropout(0.0))
 
         model.add(Conv2D(64, (3, 3), activation='relu',
                          kernel_initializer='he_uniform', padding='same'))
         model.add(MaxPooling2D((4, 4)))
-        model.add(Dropout(0.0))
 
         model.add(Conv2D(64, (3, 3), activation='relu',
                          kernel_initializer='he_uniform', padding='same'))
@@ -72,9 +76,9 @@ def define_model(input_shape):
         model.add(Flatten())
 
         model.add(Dense(64, activation='relu', kernel_initializer='he_uniform'))
-        model.add(Dropout(0.1))
+        model.add(Dropout(0.0))
         model.add(Dense(64, activation='relu', kernel_initializer='he_uniform'))
-        model.add(Dense(4, activation='sigmoid'))
+        model.add(Dense(4, activation='softmax'))
 
         optimize = Adam(0.001, 0.9)
         model.compile(optimizer=optimize, loss='categorical_crossentropy',
@@ -92,7 +96,7 @@ if __name__ == "__main__":
     wd = os.getcwd()
 
     # Load list of feature types and class labels
-    feature_types = ['phase_diffs_cossine', 'cossine_gcc', 'mel_gcc_phat', 'GCC', 'mel',
+    feature_types = ['mel', 'phase_diffs_cossine', 'cossine_gcc', 'mel_gcc_phat', 'GCC',
                      'magspec', 'ilds', 'phase_diff']
     classtypes = ['front', 'right', 'back', 'left']
     input_shapes = np.load('input_shapes.npy', allow_pickle=True)

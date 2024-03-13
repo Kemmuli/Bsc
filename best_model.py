@@ -56,24 +56,19 @@ def load_and_evaluate_model(
         print(layer_config)
 
     cm = utils.get_confusion_matrix(model, test_gen)
-    per_class_acc = utils.calculate_per_class_accuracy(cm)
-    """
-    # Generate the plot
-    plot_model(
-        model,
-        to_file=f"{feature}.png",
-        show_shapes=True,
-        show_dtype=True,
-        show_layer_names=True,
-        rankdir="TB",
-        expand_nested=False,
-        dpi=200,
-        show_layer_activations=True,
-        show_trainable=False,
-    )
-    """
+    recall = utils.get_recall(model, test_gen)
+    precision = utils.get_precision(model, test_gen)
+    accuracy = utils.get_accuracy(model, test_gen)
+    print(f'For the model {utils.get_clean_type(feature)} \nrecall: {recall}'
+          f'\nprecision: {precision}\naccuracy: {accuracy}')
+    per_class_precision = utils.calculate_per_class_precision(cm)
+
+    print(f'{feature}: {acc = }, {accuracy = }')
+
+
     utils.plot_confusion_matrix(cm, classtypes, feature)
-    utils.plot_per_class_accuracy(per_class_acc, general_acc=acc, classtypes=classtypes, feature=feature)
+    utils.plot_per_class_precision(per_class_precision, general_precision=precision, general_recall=recall,
+                                  classtypes=classtypes, feature=feature, save_dir=f'./accuracies', save=True)
 
     return acc, feature
 
